@@ -8,6 +8,7 @@
 
 import 'express-async-errors'; // Patches async errors to be caught by error handler
 import express from 'express';
+import { swaggerSpec, swaggerUiMiddleware } from './swagger';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
@@ -135,6 +136,9 @@ app.use('/api/notes', notesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/audit', auditRoutes);
+
+// ── Swagger UI ───────────────────────────────────────────────────────────────
+app.use('/api/docs', swaggerUiMiddleware.serve, swaggerUiMiddleware.setup(swaggerSpec));
 
 // ── 404 handler ────────────────────────────────────────────────────────────
 app.use(notFoundHandler);

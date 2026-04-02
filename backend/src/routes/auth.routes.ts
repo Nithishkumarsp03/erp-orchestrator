@@ -4,19 +4,97 @@ import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-/** POST /api/auth/register */
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication endpoints
+ */
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered
+ */
 router.post('/register', register);
 
-/** POST /api/auth/login */
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login and receive JWT tokens
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successful login
+ */
 router.post('/login', login);
 
-/** POST /api/auth/refresh — reads httpOnly cookie */
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh JWT tokens (httpOnly cookie)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Tokens refreshed
+ */
 router.post('/refresh', refreshTokens);
 
-/** POST /api/auth/logout */
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user (clear cookies)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logged out
+ */
 router.post('/logout', logout);
 
-/** GET /api/auth/me — requires auth */
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User data
+ */
 router.get('/me', authenticate, getMe);
 
 export default router;

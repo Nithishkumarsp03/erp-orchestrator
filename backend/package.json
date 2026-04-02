@@ -39,7 +39,9 @@
     "uuid": "^9.0.0",
     "winston": "^3.11.0",
     "zod": "^3.22.4",
-    "redis": "^4.6.12"
+    "redis": "^4.6.12",
+    "swagger-ui-express": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -54,7 +56,8 @@
     "@types/node-cron": "^3.0.11",
     "@types/pdfkit": "^0.13.3",
     "@types/supertest": "^6.0.2",
-    "@types/uuid": "^9.0.7",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/swagger-jsdoc": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "eslint": "^8.56.0",
