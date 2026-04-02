@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom CSS Variables ─────────────────────────────────────────── */
+:root {
+  --color-bg: #0f172a;
+  --color-card: #1e293b;
+  --color-elevated: #334155;
+  --color-border: #475569;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #3b82f6;
+}
+
+/* ── Base Styles ──────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ── Glassmorphism Card ───────────────────────────────────────────── */
+@layer components {
+  .glass-card {
+    @apply bg-surface-card/80 backdrop-blur-sm border border-surface-border/40 rounded-xl;
+  }
+
+  .kpi-card {
+    @apply glass-card p-6 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-card;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-500 text-white font-semibold py-2 px-4 rounded-lg 
+           transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-surface;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-elevated hover:bg-surface-border text-slate-200 font-medium py-2 px-4 rounded-lg 
+           transition-all duration-200 active:scale-95 disabled:opacity-50 focus:outline-none 
+           focus:ring-2 focus:ring-surface-border focus:ring-offset-2 focus:ring-offset-surface;
+  }
+
+  .btn-danger {
+    @apply bg-danger-600 hover:bg-danger-500 text-white font-semibold py-2 px-4 rounded-lg 
+           transition-all duration-200 active:scale-95 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-elevated border border-surface-border rounded-lg px-4 py-2.5 
+           text-slate-100 placeholder-slate-400 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-slate-300 mb-1.5;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-green  { @apply badge bg-accent-100/10 text-accent-500 border border-accent-500/20; }
+  .badge-red    { @apply badge bg-danger-100/10 text-danger-500 border border-danger-500/20; }
+  .badge-yellow { @apply badge bg-warning-100/10 text-warning-500 border border-warning-500/20; }
+  .badge-blue   { @apply badge bg-primary-100/10 text-primary-400 border border-primary-400/20; }
+  .badge-gray   { @apply badge bg-slate-700/50 text-slate-400 border border-slate-600/30; }
+
+  .tab-active {
+    @apply border-b-2 border-primary-500 text-primary-400 font-semibold;
+  }
+
+  .tab-inactive {
+    @apply border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 
+           hover:bg-surface-elevated transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item-active {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg 
+           bg-primary-600/20 text-primary-400 border border-primary-600/30 font-medium;
+  }
+
+  /* Animated gradient background for auth pages */
+  .gradient-bg {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Heatmap cell styles */
+  .heatmap-cell {
+    @apply w-3 h-3 rounded-sm cursor-pointer transition-transform hover:scale-110;
+  }
+}
+
+/* ── Recharts dark mode fixes ─────────────────────────────────────── */
+.recharts-text {
+  fill: #94a3b8 !important;
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #334155 !important;
+}
+
+/* ── Focus visible for accessibility ─────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

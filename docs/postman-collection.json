@@ -1,0 +1,228 @@
+{
+  "info": {
+    "_postman_id": "student-dashboard-v1",
+    "name": "Smart Student Dashboard API",
+    "description": "Complete API collection for the Smart Student Information Dashboard.\n\nBase URL: {{base_url}}\nSet base_url = http://localhost:5000/api in your Postman environment.\n\nAfter running 'Login', copy the accessToken from the response and set it in the Authorization header as:\nBearer {{access_token}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api" },
+    { "key": "access_token", "value": "" },
+    { "key": "student_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@1234\",\n  \"role\": \"STUDENT\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                "pm.test('Has user object', () => pm.expect(pm.response.json().data.user).to.exist);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@dashboard.edu\",\n  \"password\": \"Admin@1234\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Has accessToken', () => pm.expect(pm.response.json().data.accessToken).to.be.a('string'));",
+                "const rt = pm.response.headers.get('Set-Cookie');",
+                "pm.test('Has refreshToken cookie', () => pm.expect(rt).to.include('refreshToken'));",
+                "pm.collectionVariables.set('access_token', pm.response.json().data.accessToken);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/auth/me"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('User role is ADMIN', () => pm.expect(pm.response.json().data.user.role).to.eql('ADMIN'));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/auth/refresh"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('New access token returned', () => pm.expect(pm.response.json().data.accessToken).to.exist);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/auth/logout"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Success flag', () => pm.expect(pm.response.json().success).to.be.true);"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "List Students",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/students?page=1&limit=10",
+              "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Has students array', () => pm.expect(pm.response.json().data.students).to.be.an('array'));",
+                "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);",
+                "const students = pm.response.json().data.students;",
+                "if (students.length > 0) { pm.collectionVariables.set('student_id', students[0].id); }"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/students",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Student\",\n  \"email\": \"postman.student@test.com\",\n  \"admissionNo\": \"ADM999999\",\n  \"dob\": \"2007-05-15\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                "pm.test('Student created', () => pm.expect(pm.response.json().data.student.admissionNo).to.eql('ADM999999'));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/students/{{student_id}}"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Has summary', () => pm.expect(pm.response.json().data.summary).to.be.a('string'));"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Dashboard KPIs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/analytics/dashboard"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Has KPI fields', () => {",
+                "  const kpis = pm.response.json().data.kpis;",
+                "  pm.expect(kpis.totalStudents).to.be.a('number');",
+                "  pm.expect(kpis.avgAttendancePct).to.be.a('number');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Study Insights",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/analytics/insights"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "pm.test('Has insights array', () => pm.expect(pm.response.json().data.insights).to.be.an('array'));"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ]
+}

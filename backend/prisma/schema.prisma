@@ -1,0 +1,189 @@
+// This is the Prisma schema file — it defines your database tables, relationships,
+// and field types. When you run `prisma migrate dev`, Prisma reads this file and
+// creates the corresponding SQL tables in PostgreSQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------------
+// ENUMS
+// -------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum NoteVisibility {
+  PUBLIC
+  TEACHERS_ONLY
+  PRIVATE
+}
+
+// -------------------------------------------------------------------
+// TABLES
+// -------------------------------------------------------------------
+
+model User {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  role           Role     @default(STUDENT)
+  failedAttempts Int      @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  student        Student?
+  taughtClasses  Class[]       @relation("ClassTeacher")
+  auditLogs      AuditLog[]
+  recordedAttendances Attendance[] @relation("AttendanceRecorder")
+  notes          Note[]        @relation("NoteAuthor")
+  refreshTokens  RefreshToken[]
+  notifications  Notification[]
+
+  @@map("users")
+}
+
+model Student {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  admissionNo String   @unique @map("admission_no")
+  classId     String?  @map("class_id")
+  dob         DateTime?
+  meta        Json?    @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class       Class?   @relation(fields: [classId], references: [id])
+  attendances Attendance[]
+  grades      Grade[]
+  notes       Note[]
+
+  @@map("students")
+}
+
+model Class {
+  id        String   @id @default(uuid())
+  name      String
+  teacherId String?  @map("teacher_id")
+  schedule  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  teacher     User?       @relation("ClassTeacher", fields: [teacherId], references: [id])
+  students    Student[]
+  attendances Attendance[]
+
+  @@map("classes")
+}
+
+model Attendance {
+  id         String           @id @default(uuid())
+  studentId  String           @map("student_id")
+  classId    String           @map("class_id")
+  date       DateTime         @db.Date
+  status     AttendanceStatus @default(PRESENT)
+  recordedBy String           @map("recorded_by")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class      Class   @relation(fields: [classId], references: [id])
+  recorder   User    @relation("AttendanceRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([studentId, classId, date])
+  @@map("attendance")
+}
+
+model Grade {
+  id        String   @id @default(uuid())
+  studentId String   @map("student_id")
+  subject   String
+  score     Float
+  maxScore  Float    @default(100) @map("max_score")
+  term      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("grades")
+}
+
+model Note {
+  id         String         @id @default(uuid())
+  studentId  String         @map("student_id")
+  authorId   String         @map("author_id")
+  body       String
+  visibility NoteVisibility @default(TEACHERS_ONLY)
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  author     User    @relation("NoteAuthor", fields: [authorId], references: [id])
+
+  @@map("notes")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  resource  String
+  details   Json?    @default("{}")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
