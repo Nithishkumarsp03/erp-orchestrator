@@ -9,7 +9,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import api, { setAccessToken } from '../utils/api';
-import type { User, Role } from '../types';
+import type { User, Role, AuthState } from '../types';
 
 interface AuthStore {
   user: User | null;
@@ -26,12 +26,12 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: true, // True initially — we try to restore session
+      isLoading: true,
 
-      login: async (email, password) => {
+      login: async (email: string, password: string) => {
         const res = await api.post('/auth/login', { email, password });
         const { accessToken, user } = res.data.data;
 
@@ -39,10 +39,11 @@ export const useAuthStore = create<AuthStore>()(
         set({ user, isAuthenticated: true, isLoading: false });
       },
 
-      register: async (name, email, password, role) => {
+      register: async (name: string, email: string, password: string, role: Role) => {
         await api.post('/auth/register', { name, email, password, role });
         // After register, log them in automatically
-        await get().login(email, password);
+        const store = useAuthStore.getState();
+        await store.login(email, password);
       },
 
       logout: async () => {
@@ -71,8 +72,8 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      updateUser: (partial) => {
-        set((s) => ({ user: s.user ? { ...s.user, ...partial } : null }));
+      updateUser: (partial: Partial<User>) => {
+        set((s: AuthStore) => ({ user: s.user ? { ...s.user, ...partial } : null }));
       },
     }),
     { name: 'auth-store' }

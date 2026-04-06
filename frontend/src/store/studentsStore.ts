@@ -55,7 +55,7 @@ export const useStudentsStore = create<StudentsState>()(
       error: null,
       lastFetched: null,
 
-      fetchStudents: async (params = {}, forceRefresh = false) => {
+      fetchStudents: async (params: Record<string, any> = {}, forceRefresh = false) => {
         // Stale-while-revalidate: skip if cache is fresh
         const { lastFetched } = get();
         if (!forceRefresh && lastFetched && Date.now() - lastFetched < CACHE_TTL) {
@@ -87,7 +87,7 @@ export const useStudentsStore = create<StudentsState>()(
         try {
           const res = await api.get(`/students/${id}`);
           const { student } = res.data.data;
-          set((s) => ({
+          set((s: StudentsState) => ({
             entities: { ...s.entities, [student.id]: student },
             selectedStudent: student,
             isLoading: false,
@@ -104,11 +104,11 @@ export const useStudentsStore = create<StudentsState>()(
         const { student } = res.data.data;
 
         // Optimistic: add immediately to store
-        set((s) => ({
+        set((s: StudentsState) => ({
           entities: { ...s.entities, [student.id]: student },
           ids: [student.id, ...s.ids],
           pagination: s.pagination
-            ? { ...s.pagination, total: s.pagination.total + 1 }
+            ? { ...s.pagination, total: (s.pagination?.total || 0) + 1 }
             : null,
         }));
 
@@ -119,7 +119,7 @@ export const useStudentsStore = create<StudentsState>()(
         // Optimistic update: immediately reflect changes
         const previous = get().entities[id];
         if (previous) {
-          set((s) => ({
+          set((s: StudentsState) => ({
             entities: { ...s.entities, [id]: { ...previous, ...data } },
           }));
         }
@@ -128,7 +128,7 @@ export const useStudentsStore = create<StudentsState>()(
           const res = await api.put(`/students/${id}`, data);
           const { student } = res.data.data;
 
-          set((s) => ({
+          set((s: StudentsState) => ({
             entities: { ...s.entities, [student.id]: student },
             selectedStudent: s.selectedStudent?.id === id ? student : s.selectedStudent,
           }));
@@ -137,7 +137,7 @@ export const useStudentsStore = create<StudentsState>()(
         } catch (err) {
           // Rollback on error
           if (previous) {
-            set((s) => ({ entities: { ...s.entities, [id]: previous } }));
+            set((s: StudentsState) => ({ entities: { ...s.entities, [id]: previous } }));
           }
           throw err;
         }
@@ -146,13 +146,13 @@ export const useStudentsStore = create<StudentsState>()(
       deleteStudent: async (id: string) => {
         // Optimistic remove
         const previous = get().entities[id];
-        set((s) => {
+        set((s: StudentsState) => {
           const { [id]: _, ...rest } = s.entities;
           return {
             entities: rest,
-            ids: s.ids.filter((sid) => sid !== id),
+            ids: s.ids.filter((sid: string) => sid !== id),
             pagination: s.pagination
-              ? { ...s.pagination, total: Math.max(0, s.pagination.total - 1) }
+              ? { ...s.pagination, total: Math.max(0, (s.pagination?.total || 0) - 1) }
               : null,
           };
         });
@@ -162,7 +162,7 @@ export const useStudentsStore = create<StudentsState>()(
         } catch (err) {
           // Rollback
           if (previous) {
-            set((s) => ({
+            set((s: StudentsState) => ({
               entities: { ...s.entities, [id]: previous },
               ids: [id, ...s.ids],
             }));
@@ -171,7 +171,7 @@ export const useStudentsStore = create<StudentsState>()(
         }
       },
 
-      setSelected: (student) => set({ selectedStudent: student }),
+      setSelected: (student: Student | null) => set({ selectedStudent: student }),
       clearError: () => set({ error: null }),
     }),
     { name: 'students-store' }

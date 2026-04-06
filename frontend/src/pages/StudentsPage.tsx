@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -185,7 +185,7 @@ export default function StudentsPage() {
                 </tr>
               ) : (
                 <AnimatePresence>
-                  {students.map((student, i) => (
+                  {students.map((student: any, i: number) => (
                     <motion.tr
                       key={student.id}
                       initial={{ opacity: 0, y: -4 }}
@@ -285,14 +285,14 @@ export default function StudentsPage() {
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => setPage((p: number) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="btn-secondary py-1.5 px-3 text-sm disabled:opacity-40"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                onClick={() => setPage((p: number) => Math.min(pagination.totalPages, p + 1))}
                 disabled={!pagination.hasMore}
                 className="btn-secondary py-1.5 px-3 text-sm disabled:opacity-40"
               >
