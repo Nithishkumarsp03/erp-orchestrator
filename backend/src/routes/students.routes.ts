@@ -19,6 +19,8 @@ const router = Router();
  *   description: Student management endpoints
  */
 
+router.use(authenticate);
+
 /**
  * @swagger
  * /api/students:
@@ -167,16 +169,6 @@ router.delete('/:id', authorize('ADMIN'), deleteStudent);
  *       200:
  *         description: PDF report generated
  */
-router.get('/:id/report', generateStudentReport);
-
-router.get('/', listStudents);
-router.post('/', authorize('ADMIN', 'TEACHER'), createStudent);
-router.post('/prompt', authorize('ADMIN'), getStudentsByPrompt);
-router.get('/:id', getStudent);
-router.put('/:id', authorize('ADMIN', 'TEACHER'), updateStudent);
-router.delete('/:id', authorize('ADMIN'), deleteStudent);
-
-// PDF report
 router.get('/:id/report', generateStudentReport);
 
 export default router;

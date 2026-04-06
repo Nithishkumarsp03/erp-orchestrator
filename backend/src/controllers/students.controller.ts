@@ -289,10 +289,13 @@ export async function getStudentsByPrompt(req: Request, res: Response) {
     }
   }
 
-  // Map back to expected structure (removing the extra fields from payload if needed, or keep them)
+  // Map back to expected structure (removing the extra fields from payload)
   const resultData = students.map((s: any) => {
-    const { grades, attendances, attendancePercent, avgGrade, ...rest } = s;
-    return rest;
+    delete s.grades;
+    delete s.attendances;
+    delete s.attendancePercent;
+    delete s.avgGrade;
+    return s;
   });
 
   return res.json({

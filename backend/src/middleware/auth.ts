@@ -14,6 +14,7 @@ import { unauthorized } from '../utils/errors';
 import logger from '../utils/logger';
 
 // Extend Express Request type to carry user info
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -25,6 +26,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
